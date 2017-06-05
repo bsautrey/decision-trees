@@ -1,6 +1,7 @@
 # decision_trees.py is an implementation of David Sontag's decision tree lectures at NYU (http://cs.nyu.edu/~dsontag/courses/ml16/): http://cs.nyu.edu/~dsontag/courses/ml16/slides/lecture11.pdf
 import random
 from math import log
+from time import time,sleep
 
 import numpy as np
 import matplotlib.pyplot as plot
@@ -12,7 +13,7 @@ class DecisionTrees():
         self.X = None
         self.Y = None
         self.min_split_size = None
-        self.variable_type = None
+        self.variable_types = None
         self.tree = None
         
     def set_X(self,X):
@@ -24,7 +25,7 @@ class DecisionTrees():
     def set_min_split_size(self,min_split_size=0):
         self.min_split_size = min_split_size
     
-    def set_variable_type(self,variable_types):
+    def set_variable_types(self,variable_types):
         self.variable_types = variable_types
         
     def _partition_continuous_variables(self):
@@ -55,10 +56,9 @@ class DecisionTrees():
                 continue
             else:
                 sorted_vals.sort()
+                print 'PARTITIONING CONTINUOUS VARIABLE:',variable_id
             
-            print 'PARTITIONING CONTINUOUS VARIABLE:',variable_id
-            
-            # If the variable is continuou, look for transition points where y_0 != y_1 - x_star.
+            # If the variable is continuous, look for transition points where y_0 != y_1 - x_star.
             x_stars = []
             for i in xrange(1,number_of_rows):
                 val_0 = sorted_vals[i-1]
@@ -72,7 +72,6 @@ class DecisionTrees():
                           
             # Use the transition points to map the continuous variable to a binary variable.  
             for x_star in x_stars:
-                print '\t','PARTITION:',x_star
                 new_x_vals = []
                 for x_val,_ in vals:
                     
@@ -87,21 +86,17 @@ class DecisionTrees():
                     
                 new_variable_id = new_variable_id + 1
                 
-            print '---\n'
-                
         # Unformat the data, creating X from the new variables.
-        new_X = np.array([])
-        new_X.resize((number_of_rows,0))
-        for new_variable_id in groupings:
-            vals = groupings[new_variable_id]
-            X = []
-            for new_x_val in vals:
-                X.append(new_x_val)
-                
-            X = np.array(X)
-            X.resize((number_of_rows,1))
-            new_X = np.column_stack((new_X,X))
-            
+        X = []
+        for i in xrange(number_of_rows):
+            row = []
+            for new_variable_id in groupings:
+                val = groupings[new_variable_id][i]
+                row.append(val)
+            X.append(row)
+        
+        new_X = np.array(X)
+        new_X.resize((number_of_rows,len(groupings)))
         self.X = new_X
         
     def build_tree(self):
@@ -248,7 +243,7 @@ class DecisionTrees():
                 prob_dist = self._calculate_probability_distribution(y_vals)
                 conditional_entropy = conditional_entropy + x_prob*self._calculate_entropy(prob_dist)
                 
-            # Find the variable with maximum  information gain.
+            # Find the variable with maximum information gain.
             information_gain = entropy - conditional_entropy
             
             if information_gain > max_information_gain:
@@ -447,10 +442,11 @@ class DecisionTrees():
         # build decision tree
         self.set_X(X)
         self.set_Y(Y)
-        variable_type = {}
-        variable_type[0] = 'CONTINUOUS'
-        variable_type[1] = 'CONTINUOUS'
-        self.set_variable_type(variable_type)
+        variable_types = {}
+        variable_types[0] = 'CONTINUOUS'
+        variable_types[1] = 'CONTINUOUS'
+        self.set_variable_types(variable_type)
+        self.set_min_split_size()
         self.build_tree()
         
         # create test data
@@ -545,16 +541,17 @@ class DecisionTrees():
         X_2.resize((sample_size,1))
         colors = np.array(colors)
         colors.resize((sample_size,1))
-        plot.scatter(X_1[:,0],X_2[:,0],color=colors[:,0],s=1.0)
+        plot.scatter(X_1[:,0],X_2[:,0],color=colors[:,0],s=0.5)
         plot.show()
         
         # build decision tree
         self.set_X(X)
         self.set_Y(Y)
-        variable_type = {}
-        variable_type[0] = 'CONTINUOUS'
-        variable_type[1] = 'CONTINUOUS'
-        self.set_variable_type(variable_type)
+        variable_types = {}
+        variable_types[0] = 'CONTINUOUS'
+        variable_types[1] = 'CONTINUOUS'
+        self.set_variable_types(variable_types)
+        self.set_min_split_size()
         self.build_tree()
         
         # create test data
@@ -596,7 +593,7 @@ class DecisionTrees():
         X_2.resize((sample_size,1))
         colors = np.array(colors)
         colors.resize((sample_size,1))
-        plot.scatter(X_1[:,0],X_2[:,0],color=colors[:,0],s=1.0)
+        plot.scatter(X_1[:,0],X_2[:,0],color=colors[:,0],s=0.5)
         plot.show()
         
         
