@@ -1,7 +1,6 @@
 # decision_trees.py is an implementation of David Sontag's decision tree lectures at NYU (http://cs.nyu.edu/~dsontag/courses/ml16/): http://cs.nyu.edu/~dsontag/courses/ml16/slides/lecture11.pdf
 import random
 from math import log
-from time import time,sleep
 
 import numpy as np
 import matplotlib.pyplot as plot
@@ -96,7 +95,6 @@ class DecisionTrees():
             X.append(row)
         
         new_X = np.array(X)
-        new_X.resize((number_of_rows,len(groupings)))
         self.X = new_X
         
     def build_tree(self):
